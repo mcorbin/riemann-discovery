@@ -1,0 +1,4 @@
+{:plugin "riemann-discovery"
+ :title  "A plugin for service discovery"
+ :git-repo "https://github.com/mcorbin/riemann-discovery"
+ :require riemann.plugin.riemann-discovery}

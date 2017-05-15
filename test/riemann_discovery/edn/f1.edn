@@ -1,0 +1,10 @@
+{:ttl 120
+ :services [{:hosts ["kafka1" "kafka2"]
+             :name "kafka"
+             :ttl 60}
+            {:hosts ["api1"]
+             :name "api"}]}
+
+{:services [{:hosts ["zookeeper1"]
+             :name "zookeeper"
+             :ttl 60}]}

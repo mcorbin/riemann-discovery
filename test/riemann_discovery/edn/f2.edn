@@ -1,0 +1,3 @@
+{:ttl 120
+ :services [{:hosts ["cassandra1"]
+             :name "cassandra"}]}
