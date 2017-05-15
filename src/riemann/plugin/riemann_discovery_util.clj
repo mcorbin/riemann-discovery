@@ -2,9 +2,7 @@
   (:require [riemann.time :as time]
             [riemann.config :refer [reinject core]]
             [riemann.index :refer [insert delete]]
-            [riemann.streams :refer [expired?
-                                     where
-                                     tagged]]))
+            [riemann.streams :refer [expired?]]))
 
 (defprotocol Discovery
   (initialize [this discovery-config global-config]
@@ -89,16 +87,6 @@
     (reinject-events events)
     ;; returns the next state
     result-state))
-
-(defn discovery-stream
-  "You can use this stream to automatically index/remove events emitted by riemann-discovery"
-  [index]
-  (where (tagged "riemann-discovery")
-    (fn [event]
-      (let [event (update event :service #(str "discovery-" %))]
-        (cond
-          (= "added" (:state event)) (index event)
-          (= "removed" (:state event)) (index event))))))
 
 ;; (defmulti discovery (fn [discovery-config global-config] (:type global-config)))
 ;; (defmethod discovery :file
