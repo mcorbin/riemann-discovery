@@ -87,8 +87,3 @@
     (reinject-events events)
     ;; returns the next state
     result-state))
-
-;; (defmulti discovery (fn [discovery-config global-config] (:type global-config)))
-;; (defmethod discovery :file
-;;   [discovery-config global-config]
-;;   (file/file-discovery discovery-config global-config))
