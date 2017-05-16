@@ -14,7 +14,6 @@
   [index]
   (where (tagged "riemann-discovery")
     (fn [event]
-      (let [event (update event :service #(str "discovery-" %))]
-        (cond
-          (= "added" (:state event)) (index event)
-          (= "removed" (:state event)) (index event))))))
+      (cond
+        (= "added" (:state event)) (index event)
+        (= "removed" (:state event)) (index event)))))
