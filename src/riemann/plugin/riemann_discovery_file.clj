@@ -44,7 +44,8 @@
                       (flatten))
                 directory-path-vec)))
 
-(defn get-configuration
+(defn discover
+  "returns all current services"
   [discovery-config]
   (read-edn-files (:path discovery-config)))
 

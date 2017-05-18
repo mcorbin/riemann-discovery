@@ -51,20 +51,20 @@
 
 (defn get-new-state
   "takes the current and the new state, reinject events, returns the next state"
-  [current-state new-state]
-  (let [current-state-set (set (keys current-state))
-        new-state-set (set (keys new-state))
+  [old-state current-state]
+  (let [old-state-set (set (keys old-state))
+        current-state-set (set (keys current-state))
         ;; services removed in the new state
-        removed-services (->> (clojure.set/difference current-state-set
-                                                           new-state-set)
-                                   (select-keys current-state))
+        removed-services (->> (clojure.set/difference old-state-set
+                                                           current-state-set)
+                                   (select-keys old-state))
         ;; services added in the new state
-        added-services (->> (clojure.set/difference new-state-set
-                                                         current-state-set)
-                            (select-keys new-state))
-        ;; keys for services common services between the current and the next state
-        common-services-keys (clojure.set/intersection current-state-set
-                                                       new-state-set)
+        added-services (->> (clojure.set/difference current-state-set
+                                                         old-state-set)
+                            (select-keys current-state))
+        ;; keys for services common services between the old and the current state
+        common-services-keys (clojure.set/intersection old-state-set
+                                                       current-state-set)
         ;; updates-services are common services that need to emitted
         ;; (because they are expired)
         ;; old-services are common services that need to be present in the next state
@@ -73,11 +73,11 @@
         (reduce (fn [result k]
                   ;; multiply by 2 the ttl to give a chance to detect
                   ;; a missing service
-                  (if (expired? (update (get current-state k) :ttl * 2))
-                    (update result 0 #(assoc % k (get new-state k)))
-                    (update result 1 #(assoc % k (get current-state k)))))
+                  (if (expired? (update (get old-state k) :ttl * 2))
+                    (update result 0 #(assoc % k (get current-state k)))
+                    (update result 1 #(assoc % k (get old-state k)))))
                 [{} {}] common-services-keys)
-        ;; the next state returned by the fn
+        ;; the new state
         result-state (merge updated-services old-services added-services)
         ;; we should emit these events
         events (concat (generate-events updated-services "added")
@@ -85,5 +85,5 @@
                        (generate-events removed-services "removed"))]
     ;; reinject events
     (reinject-events events)
-    ;; returns the next state
+    ;; returns the new
     result-state))

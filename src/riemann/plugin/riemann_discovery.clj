@@ -15,18 +15,31 @@
         (= "removed" (:state event)) (index event)))))
 
 (defn discovery-task
+  "takes the discovery global configuration and the discovery specific configuration
+   Returns a fn which get the current services, send events to the Riemann index, and update the services atom."
   [global-config discovery-config]
-  (let [services (atom {})]
+  (let [services (atom {})] ;; contains current view of the world
     (fn []
-      (let [new-services (-> (condp = (:type global-config)
+      (let [;; get actual services running using a discovery mechanism
+            current-state (-> (condp = (:type global-config)
                                :config discovery-config
-                               :file (file/get-services discovery-config))
+                               :file (file/discover discovery-config))
                              (util/get-services-from-configuration))
-            current-state @services
-            new-state (util/get-new-state current-state new-services)]
+            ;; get the old state
+            old-state @services
+            ;; get the new state using current-state and old state
+            new-state (util/get-new-state old-state current-state)]
+        ;; update the atom
         (reset! services new-state)))))
 
 (defn discovery
+  "Takes 2 parameters:
+
+   global-config    : a map containing global discovery options (common to all discovery mechanisms). Keys are :
+      :type         : discovery mechanism (`:file`,`:config`)
+      :interval     : refresh interval (default `60`)
+
+   discovery-config : a map containing the configuration for the discovery mechanism"
   ([global-config discovery-config]
    (every! (:interval global-config 60) 30
            (discovery-task global-config discovery-config))))
