@@ -1,5 +1,5 @@
 (ns riemann-discovery.riemann-discovery-config-test
-  (:require [riemann.plugin.riemann-discovery-config :as config]
+  (:require [riemann.plugin.riemann-discovery :as discovery]
             [riemann.time.controlled :refer :all]
             [riemann.time :refer [unix-time]]
             [riemann-discovery.test-utils :refer [with-mock]]
@@ -10,16 +10,17 @@
 
 (deftest config-discovery-test
   (with-mock [calls riemann.plugin.riemann-discovery-util/reinject-events]
-    (let [d (config/config-discovery [{:ttl 120
-                                       :services [{:hosts ["kafka1" "kafka2"]
-                                                   :name "kafka"
-                                                   :ttl 60}
-                                                  {:hosts ["api1"]
-                                                   :name "api"}]}
+    (let [d (discovery/discovery {:type :config}
+                                 [{:ttl 120
+                                   :services [{:hosts ["kafka1" "kafka2"]
+                                               :name "kafka"
+                                               :ttl 60}
+                                              {:hosts ["api1"]
+                                               :name "api"}]}
 
-                                      {:services [{:hosts ["zookeeper1"]
-                                                   :name "zookeeper"
-                                                   :ttl 60}]}])]
+                                  {:services [{:hosts ["zookeeper1"]
+                                               :name "zookeeper"
+                                               :ttl 60}]}])]
       (is (= (count @calls) 0))
       (advance! 29)
       (is (= (count @calls) 0))

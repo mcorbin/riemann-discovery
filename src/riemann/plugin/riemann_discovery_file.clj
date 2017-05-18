@@ -44,23 +44,7 @@
                       (flatten))
                 directory-path-vec)))
 
-(defn get-file-discovery
-  []
-  (let [services (atom {})]
-    (reify
-      Discovery
-      (initialize [this discovery-config global-config]
-        (let [config (read-edn-files (:path discovery-config))
-              current-state @services
-              new-services (get-services-from-configuration config)
-              new-state (get-new-state current-state new-services)]
-          (reset! services new-state))))))
-
-(defn file-discovery
-  ([discovery-config] (file-discovery discovery-config {:interval 60}))
-  ([discovery-config global-config]
-   (let [services (atom {})
-         d (get-file-discovery)]
-     (every! (:interval global-config) 30
-             (fn [] (initialize d discovery-config global-config))))))
+(defn get-configuration
+  [discovery-config]
+  (read-edn-files (:path discovery-config)))
 

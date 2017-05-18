@@ -1,5 +1,6 @@
 (ns riemann-discovery.riemann-discovery-file-test
   (:require [riemann.plugin.riemann-discovery-file :as file]
+            [riemann.plugin.riemann-discovery :as discovery]
             [riemann.time.controlled :refer :all]
             [riemann.time :refer [unix-time]]
             [riemann-discovery.test-utils :refer [with-mock]]
@@ -52,7 +53,8 @@
 
 (deftest file-discovery-test
   (with-mock [calls riemann.plugin.riemann-discovery-util/reinject-events]
-    (let [d (file/file-discovery {:path ["test/riemann_discovery/edn/"]})]
+    (let [d (discovery/discovery {:type :file}
+                                 {:path ["test/riemann_discovery/edn/"]})]
       (is (= (count @calls) 0))
       (advance! 29)
       (is (= (count @calls) 0))
