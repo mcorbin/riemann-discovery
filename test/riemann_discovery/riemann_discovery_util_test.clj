@@ -12,35 +12,35 @@
   [service-map]
   (into {} (map (fn [[k v]] [k (dissoc v :time)]) service-map)))
 
-(deftest get-service-map-test
-  (is (= (remove-time (discovery/get-service-map {:name "kafka"
+(deftest service->services-test
+  (is (= (remove-time (discovery/service->services {:name "kafka"
                                                   :ttl 60} 120)))
       {[nil "kafka"] {:tags ["riemann-discovery"]
                       :ttl 60}})
-  (is (= (remove-time (discovery/get-service-map {:hosts ["foo.bar"]
+  (is (= (remove-time (discovery/service->services {:hosts ["foo.bar"]
                                                   :ttl 60} 120)))
       {["foo.bar" nil] {:tags ["riemann-discovery"]
                         :ttl 60}})
-  (is (= (remove-time (discovery/get-service-map {:hosts ["foo.bar" "foobar.bar"]
+  (is (= (remove-time (discovery/service->services {:hosts ["foo.bar" "foobar.bar"]
                                                   :name "kafka"
                                                   :ttl 60} 120)))
       {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                             :ttl 60}
        ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
                                :ttl 60}})
-  (is (= (remove-time (discovery/get-service-map {:hosts ["foo.bar"]
+  (is (= (remove-time (discovery/service->services {:hosts ["foo.bar"]
                                                   :name "kafka"} 120)))
       {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                             :ttl 120}
        ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
                                :ttl 120}})
-  (is (= (remove-time (discovery/get-service-map {:hosts ["foo.bar"]
+  (is (= (remove-time (discovery/service->services {:hosts ["foo.bar"]
                                                   :name "kafka"} nil)))
       {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                             :ttl nil}}))
 
-(deftest get-services-from-configuration-elem-test
-  (is (= (remove-time (discovery/get-services-from-configuration-elem
+(deftest configuration-elem->services-test
+  (is (= (remove-time (discovery/configuration-elem->services
                        {:ttl 120
                         :services [{:hosts ["foo.bar" "foobar.bar"]
                                     :name "kafka"
@@ -54,8 +54,8 @@
           ["baz.boo" "api"] {:tags ["riemann-discovery"]
                                   :ttl 120}})))
 
-(deftest get-services-from-configuration-test
-  (is (= (remove-time (discovery/get-services-from-configuration
+(deftest configuration->services-test
+  (is (= (remove-time (discovery/configuration->services
                        [{:ttl 120
                          :services [{:hosts ["foo.bar" "foobar.bar"]
                                      :name "kafka"
@@ -68,7 +68,7 @@
                                   :ttl 60}
           ["baz.boo" "api"] {:tags ["riemann-discovery"]
                              :ttl 120}}))
-  (is (= (remove-time (discovery/get-services-from-configuration
+  (is (= (remove-time (discovery/configuration->services
                        [{:ttl 120
                          :services [{:hosts ["foo.bar" "foobar.bar"]
                                      :name "kafka"

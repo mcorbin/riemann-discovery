@@ -1,8 +1,5 @@
 (ns riemann.plugin.riemann-discovery-file
-  (:require [riemann.plugin.riemann-discovery-util :refer [Discovery
-                                                           initialize
-                                                           get-new-state
-                                                           get-services-from-configuration]]
+  (:require [riemann.plugin.riemann-discovery-util :refer [get-new-state]]
             [riemann.time :refer [every!]]
             [clojure.edn :as edn])
   (:import java.io.File))

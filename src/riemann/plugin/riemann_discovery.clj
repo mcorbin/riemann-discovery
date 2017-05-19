@@ -24,7 +24,7 @@
             current-state (-> (condp = (:type global-config)
                                :config discovery-config
                                :file (file/discover discovery-config))
-                             (util/get-services-from-configuration))
+                             (util/configuration->services))
             ;; get the old state
             old-state @services
             ;; get the new state using current-state and old state

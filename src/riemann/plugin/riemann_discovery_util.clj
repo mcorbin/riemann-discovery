@@ -4,16 +4,44 @@
             [riemann.index :refer [insert delete]]
             [riemann.streams :refer [expired?]]))
 
-(defprotocol Discovery
-  (initialize [this discovery-config global-config]
-    "Lookup and update state. Should returns config-vec
-     discovery-config is a map containing the configuration for the
-     discovery mechanism.
-     global-discovery is a map containing the configuration shared between
-     discovery mechanism"))
+;; A `service` is a map like :
 
-(defn get-service-map
-  "Takes a service and a default ttl, generate a service map"
+;; {:hosts ["foo.bar" "foobar.bar"]
+;;  :name "kafka"
+;;  :ttl 60}
+
+;; It represents a service running in hosts
+
+;; It can be converted into a `services` map like :
+
+;; {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
+;;                       :ttl 60}
+;;  ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
+;;                          :ttl 60}}
+
+;; A `configuration-elem` is a map with a `:ttl` key (default :ttl for services), a `:services` key containing a vector of `service` :
+
+;; {:ttl 120
+;;  :services [{:hosts ["foo.bar" "foobar.bar"]
+;;              :name "kafka"
+;;              :ttl 60}
+;;             {:hosts ["baz.boo"]
+;;              :name "api"}]}
+
+;; A `configuration` is a vector of `configuration-elem`:
+
+;; [{:ttl 120
+;;   :services [{:hosts ["foo.bar" "foobar.bar"]
+;;               :name "kafka"
+;;               :ttl 60}
+;;              {:hosts ["baz.boo"]
+;;               :name "api"}]}]
+
+;; All service discovery mechanisms should returns a `configuration`.
+;; This configuration is converted into a `services` map.
+
+(defn service->services
+  "Takes a service and a default ttl, generate a `services` map for all hosts/services"
   [service default-ttl]
   (reduce #(assoc %1 [%2 (:name service)] {:tags ["riemann-discovery"]
                                            :time (time/unix-time)
@@ -21,16 +49,16 @@
           {}
           (:hosts service [nil])))
 
-(defn get-services-from-configuration-elem
-  "takes a part of a configuration (a map containing the :ttl and :service keys) and generates a map containing all services"
+(defn configuration-elem->services
+  "takes a `configuration-elem` and generates a `services` map for all hosts/services"
   [config-elem]
-  (reduce #(merge %1 (get-service-map %2 (:ttl config-elem))) {}
+  (reduce #(merge %1 (service->services %2 (:ttl config-elem))) {}
           (:services config-elem)))
 
-(defn get-services-from-configuration
-  "Takes a configuration (a vector of maps), generate a map containing all services"
+(defn configuration->services
+  "Takes a configuration, generate a `services` map for all hosts/services in each configuration elem"
   [config]
-  (reduce #(merge %1 (get-services-from-configuration-elem %2)) {} config))
+  (reduce #(merge %1 (configuration-elem->services %2)) {} config))
 
 (defn generate-events
   "takes a list of services and generates a list of events"
