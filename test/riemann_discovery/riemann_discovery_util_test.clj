@@ -1,7 +1,6 @@
 (ns riemann-discovery.riemann-discovery-util-test
   (:require [clojure.test :refer :all]
             [riemann.time.controlled :refer :all]
-            [riemann.time :refer [unix-time]]
             [riemann-discovery.test-utils :refer [with-mock]]
             [riemann.plugin.riemann-discovery-util :as discovery]))
 

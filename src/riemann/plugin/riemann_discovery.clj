@@ -1,6 +1,7 @@
 (ns riemann.plugin.riemann-discovery
   (:require [riemann.plugin.riemann-discovery-file :as file]
             [riemann.plugin.riemann-discovery-util :as util]
+            [riemann.plugin.riemann-discovery-http :as http]
             [riemann.time :refer [every!]]
             [riemann.streams :refer [expired?
                                      where
@@ -22,9 +23,10 @@
     (fn []
       (let [;; get actual services running using a discovery mechanism
             current-state (-> (condp = (:type global-config)
-                               :config discovery-config
-                               :file (file/discover discovery-config))
-                             (util/configuration->services))
+                                :config discovery-config
+                                :file (file/discover discovery-config)
+                                :http (http/discover discovery-config))
+                              (util/configuration->services))
             ;; get the old state
             old-state @services
             ;; get the new state using current-state and old state
