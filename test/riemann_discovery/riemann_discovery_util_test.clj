@@ -121,6 +121,9 @@
            :time nil}]
          )))
 
+(defn get-random-state
+  [number]
+  (reduce #(assoc %1 [(* %2 2) %2] {:time 100 :ttl 80}) {} (range number)))
 
 (deftest get-new-state-test
   (with-mock [calls discovery/reinject-events]

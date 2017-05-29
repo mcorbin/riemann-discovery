@@ -78,7 +78,8 @@
     (reinject event)))
 
 (defn get-new-state
-  "takes the current and the new state, reinject events, returns the next state"
+  "takes the current and the new state, reinject events, returns the next state
+  TODO : optimize this function (transient, loop... ?)"
   [old-state current-state]
   (let [old-state-set (set (keys old-state))
         current-state-set (set (keys current-state))
