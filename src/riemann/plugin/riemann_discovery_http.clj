@@ -1,7 +1,5 @@
 (ns riemann.plugin.riemann-discovery-http
-    (:require [riemann.plugin.riemann-discovery-util :refer [get-new-state]]
-              [riemann.time :refer [every!]]
-              [clj-http.client :as http]
+    (:require [clj-http.client :as http]
               [cheshire.core :as json]))
 
 

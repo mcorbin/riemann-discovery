@@ -113,5 +113,5 @@
                        (generate-events removed-services "removed"))]
     ;; reinject events
     (reinject-events events)
-    ;; returns the new
+    ;; returns the new state
     result-state))
