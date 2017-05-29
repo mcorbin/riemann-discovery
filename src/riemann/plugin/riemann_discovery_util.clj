@@ -84,11 +84,11 @@
         current-state-set (set (keys current-state))
         ;; services removed in the new state
         removed-services (->> (clojure.set/difference old-state-set
-                                                           current-state-set)
-                                   (select-keys old-state))
+                                                      current-state-set)
+                              (select-keys old-state))
         ;; services added in the new state
         added-services (->> (clojure.set/difference current-state-set
-                                                         old-state-set)
+                                                    old-state-set)
                             (select-keys current-state))
         ;; keys for services common services between the old and the current state
         common-services-keys (clojure.set/intersection old-state-set
