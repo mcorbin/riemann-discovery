@@ -38,8 +38,8 @@
       {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                             :ttl nil}}))
 
-(deftest configuration-elem->services-test
-  (is (= (remove-time (discovery/configuration-elem->services
+(deftest configuration->services-test
+  (is (= (remove-time (discovery/configuration->services
                        {:ttl 120
                         :services [{:hosts ["foo.bar" "foobar.bar"]
                                     :name "kafka"
@@ -54,7 +54,7 @@
                                   :ttl 120}})))
 
 (deftest configuration->services-test
-  (is (= (remove-time (discovery/configuration->services
+  (is (= (remove-time (discovery/configuration-vec->services
                        [{:ttl 120
                          :services [{:hosts ["foo.bar" "foobar.bar"]
                                      :name "kafka"
@@ -67,7 +67,7 @@
                                   :ttl 60}
           ["baz.boo" "api"] {:tags ["riemann-discovery"]
                              :ttl 120}}))
-  (is (= (remove-time (discovery/configuration->services
+  (is (= (remove-time (discovery/configuration-vec->services
                        [{:ttl 120
                          :services [{:hosts ["foo.bar" "foobar.bar"]
                                      :name "kafka"

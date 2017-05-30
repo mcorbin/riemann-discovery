@@ -19,7 +19,7 @@
 ;;  ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
 ;;                          :ttl 60}}
 
-;; A `configuration-elem` is a map with a `:ttl` key (default :ttl for services), a `:services` key containing a vector of `service` :
+;; A `configuration` is a map with a `:ttl` key (default :ttl for services), a `:services` key containing a vector of `service` :
 
 ;; {:ttl 120
 ;;  :services [{:hosts ["foo.bar" "foobar.bar"]
@@ -28,7 +28,7 @@
 ;;             {:hosts ["baz.boo"]
 ;;              :name "api"}]}
 
-;; A `configuration` is a vector of `configuration-elem`:
+;; A `configuration-vec` is a vector of `configuration`:
 
 ;; [{:ttl 120
 ;;   :services [{:hosts ["foo.bar" "foobar.bar"]
@@ -49,16 +49,16 @@
           {}
           (:hosts service [nil])))
 
-(defn configuration-elem->services
-  "takes a `configuration-elem` and generates a `services` map for all hosts/services"
+(defn configuration->services
+  "takes a `configuration` and generates a `services` map for all hosts/services"
   [config-elem]
   (reduce #(merge %1 (service->services %2 (:ttl config-elem))) {}
           (:services config-elem)))
 
-(defn configuration->services
-  "Takes a configuration, generate a `services` map for all hosts/services in each configuration elem"
+(defn configuration-vec->services
+  "Takes a configuration-vec, generate a `services` map for all hosts/services for each configuration"
   [config]
-  (reduce #(merge %1 (configuration-elem->services %2)) {} config))
+  (reduce #(merge %1 (configuration->services %2)) {} config))
 
 (defn generate-events
   "takes a list of services and generates a list of events"

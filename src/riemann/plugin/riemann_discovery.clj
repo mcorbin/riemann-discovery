@@ -26,7 +26,7 @@
                                 :config discovery-config
                                 :file (file/discover discovery-config)
                                 :http (http/discover discovery-config))
-                              (util/configuration->services))
+                              (util/configuration-vec->services))
             ;; get the old state
             old-state @services
             ;; get the new state using current-state and old state
@@ -40,6 +40,7 @@
    global-config    : a map containing global discovery options (common to all discovery mechanisms). Keys are :
       :type         : discovery mechanism (`:file`,`:config`)
       :interval     : refresh interval (default `60`)
+      :tags         : a list of tags (default `[]`)
 
    discovery-config : a map containing the configuration for the discovery mechanism"
   ([global-config discovery-config]
