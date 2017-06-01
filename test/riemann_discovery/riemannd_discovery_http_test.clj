@@ -42,11 +42,11 @@
 
 (deftest discover-test
   (let [result (discover {:url "http://localhost:9999"})]
-    (is (= result services))))
+    (is (= result (riemann.plugin.riemann-discovery-config/discover services)))))
 
 
 (deftest http-discovery-test
-  (with-mock [calls riemann.plugin.riemann-discovery-util/reinject-events]
+  (with-mock [calls riemann.plugin.riemann-discovery/reinject-events]
     (let [d (discovery/discovery {:type :http}
                                  {:url "http://localhost:9999"})]
       (is (= (count @calls) 0))

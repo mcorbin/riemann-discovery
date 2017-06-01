@@ -52,7 +52,7 @@
                      :name "cassandra"}]})))
 
 (deftest file-discovery-test
-  (with-mock [calls riemann.plugin.riemann-discovery-util/reinject-events]
+  (with-mock [calls riemann.plugin.riemann-discovery/reinject-events]
     (let [d (discovery/discovery {:type :file}
                                  {:path ["test/riemann_discovery/edn/"]})]
       (is (= (count @calls) 0))

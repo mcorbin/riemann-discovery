@@ -1,97 +1,12 @@
-(ns riemann-discovery.riemann-discovery-util-test
-  (:require [clojure.test :refer :all]
+(ns riemann-discovery.riemann-discovery-test
+  (:require [riemann.plugin.riemann-discovery :as discovery]
             [riemann.time.controlled :refer :all]
+            [riemann.time :refer [unix-time]]
             [riemann-discovery.test-utils :refer [with-mock]]
-            [riemann.plugin.riemann-discovery-util :as discovery]))
+            [clojure.test :refer :all]))
 
 (use-fixtures :once control-time!)
 (use-fixtures :each reset-time!)
-
-(defn remove-time
-  [service-map]
-  (into {} (map (fn [[k v]] [k (dissoc v :time)]) service-map)))
-
-(deftest service->services-test
-  (is (= (remove-time (discovery/service->services {:name "kafka"
-                                                  :ttl 60} 120)))
-      {[nil "kafka"] {:tags ["riemann-discovery"]
-                      :ttl 60}})
-  (is (= (remove-time (discovery/service->services {:hosts ["foo.bar"]
-                                                  :ttl 60} 120)))
-      {["foo.bar" nil] {:tags ["riemann-discovery"]
-                        :ttl 60}})
-  (is (= (remove-time (discovery/service->services {:hosts ["foo.bar" "foobar.bar"]
-                                                  :name "kafka"
-                                                  :ttl 60} 120)))
-      {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
-                            :ttl 60}
-       ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
-                               :ttl 60}})
-  (is (= (remove-time (discovery/service->services {:hosts ["foo.bar"]
-                                                  :name "kafka"} 120)))
-      {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
-                            :ttl 120}
-       ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
-                               :ttl 120}})
-  (is (= (remove-time (discovery/service->services {:hosts ["foo.bar"]
-                                                  :name "kafka"} nil)))
-      {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
-                            :ttl nil}}))
-
-(deftest configuration->services-test
-  (is (= (remove-time (discovery/configuration->services
-                       {:ttl 120
-                        :services [{:hosts ["foo.bar" "foobar.bar"]
-                                    :name "kafka"
-                                    :ttl 60}
-                                   {:hosts ["baz.boo"]
-                                    :name "api"}]}))
-         {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
-                               :ttl 60}
-          ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
-                                  :ttl 60}
-          ["baz.boo" "api"] {:tags ["riemann-discovery"]
-                                  :ttl 120}})))
-
-(deftest configuration->services-test
-  (is (= (remove-time (discovery/configuration-vec->services
-                       [{:ttl 120
-                         :services [{:hosts ["foo.bar" "foobar.bar"]
-                                     :name "kafka"
-                                     :ttl 60}
-                                    {:hosts ["baz.boo"]
-                                     :name "api"}]}]))
-         {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
-                               :ttl 60}
-          ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
-                                  :ttl 60}
-          ["baz.boo" "api"] {:tags ["riemann-discovery"]
-                             :ttl 120}}))
-  (is (= (remove-time (discovery/configuration-vec->services
-                       [{:ttl 120
-                         :services [{:hosts ["foo.bar" "foobar.bar"]
-                                     :name "kafka"
-                                     :ttl 60}
-                                    {:hosts ["baz.boo"]
-                                     :name "api"}]}
-                        {:ttl 180
-                         :services [{:hosts ["foo.bar" "foobar.bar"]
-                                     :name "toto"
-                                     :ttl 60}
-                                    {:hosts ["baz.baz"]
-                                     :name "api"}]}]))
-         {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
-                               :ttl 60}
-          ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
-                                  :ttl 60}
-          ["baz.boo" "api"] {:tags ["riemann-discovery"]
-                             :ttl 120}
-          ["foo.bar" "toto"] {:tags ["riemann-discovery"]
-                              :ttl 60}
-          ["foobar.bar" "toto"] {:tags ["riemann-discovery"]
-                                 :ttl 60}
-          ["baz.baz" "api"] {:tags ["riemann-discovery"]
-                             :ttl 180}})))
 
 (deftest generate-events-test
   (is (= (vec (discovery/generate-events {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
@@ -118,12 +33,42 @@
            :service "api"
            :ttl 120
            :tags ["riemann-discovery"]
-           :time nil}]
-         )))
+           :time nil}])))
 
 (defn get-random-state
   [number]
   (reduce #(assoc %1 [(* %2 2) %2] {:time 100 :ttl 80}) {} (range number)))
+
+(deftest reinject-events-test
+  (testing "no pred-fn"
+    (with-mock [calls riemann.config/reinject]
+      (discovery/reinject-events [{:host "foo"
+                                   :service "bar"
+                                   :time 1
+                                   :ttl 60
+                                   :tags ["kafka"]
+                                   :state "added"}
+                                  {:host "foo"
+                                   :service "baz"
+                                   :time 1
+                                   :ttl 60
+                                   :tags ["riemann"]
+                                   :state "added"}]
+                                 {})
+      (is (= (first (first @calls)))
+          {:host "foo"
+           :service "bar"
+           :time 1
+           :ttl 60
+           :tags ["kafka"]
+           :state "added"})
+      (is (= (first (second @calls)))
+          {:host "foo"
+           :service "baz"
+           :time 1
+           :ttl 60
+           :tags ["riemann"]
+           :state "added"}))))
 
 (deftest get-new-state-test
   (with-mock [calls discovery/reinject-events]
@@ -135,26 +80,27 @@
                                     :ttl 60}
                ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
                                        :time 10
-                                       :ttl 60}})
+                                       :ttl 60}}
+              {})
              {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                    :time 10
                                    :ttl 60}
               ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
                                       :time 10
-                                      :ttl 60}})))
-    (is (= (vec (first (last @calls)))
-           [{:host "foo.bar"
-             :service "kafka"
-             :state "added"
-             :time 10
-             :ttl 60
-             :tags ["riemann-discovery"]}
-            {:host "foobar.bar"
-             :service "kafka"
-             :state "added"
-             :time 10
-             :ttl 60
-             :tags ["riemann-discovery"]}]))
+                                      :ttl 60}}))
+      (is (= (vec (first (last @calls)))
+             [{:host "foo.bar"
+               :service "kafka"
+               :state "added"
+               :time 10
+               :ttl 60
+               :tags ["riemann-discovery"]}
+              {:host "foobar.bar"
+               :service "kafka"
+               :state "added"
+               :time 10
+               :ttl 60
+               :tags ["riemann-discovery"]}])))
     (testing "same configuration"
       (is (= (discovery/get-new-state
               {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
@@ -168,15 +114,15 @@
                                     :ttl 60}
                ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
                                        :time 10
-                                       :ttl 60}})
+                                       :ttl 60}}
+              {})
              {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                    :time 10
                                    :ttl 60}
               ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
                                       :time 10
                                       :ttl 60}})))
-    (is (= (vec (first (last @calls)))
-           []))
+    (is (= (vec (first (last @calls))) []))
     (testing "remove service"
       (is (= (discovery/get-new-state
               {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
@@ -187,7 +133,8 @@
                                        :ttl 60}}
               {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                     :time 10
-                                    :ttl 60}})
+                                    :ttl 60}}
+              {})
              {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                    :time 10
                                    :ttl 60}})))
@@ -208,7 +155,8 @@
                                     :ttl 60}
                ["foobar.bar" "kafka"] {:tags ["riemann-discovery"]
                                        :time 10
-                                       :ttl 60}})
+                                       :ttl 60}}
+              {})
              {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                    :time 10
                                    :ttl 60}
@@ -229,7 +177,8 @@
                                     :ttl 60}}
               {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                     :time 60
-                                    :ttl 60}})
+                                    :ttl 60}}
+              {})
              {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                    :time 10
                                    :ttl 60}}))
@@ -242,7 +191,8 @@
                                     :ttl 60}}
               {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                     :time 60
-                                    :ttl 60}})
+                                    :ttl 60}}
+              {})
              {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                    :time 10
                                    :ttl 60}}))
@@ -255,7 +205,8 @@
                                     :ttl 60}}
               {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                     :time 120
-                                    :ttl 60}})
+                                    :ttl 60}}
+              {})
              {["foo.bar" "kafka"] {:tags ["riemann-discovery"]
                                    :time 120
                                    :ttl 60}}))
@@ -266,3 +217,5 @@
              :time 120
              :ttl 60
              :tags ["riemann-discovery"]}])))))
+
+
