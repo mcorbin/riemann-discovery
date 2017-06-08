@@ -140,38 +140,17 @@ In your `riemann.config`:
 `:url` is the HTTP endpoint. It must returns a json body respecting this format:
 
 ```javascript
-[
-  {
-    "ttl": 120,
-    "services": [
-      {
-        "hosts": [
-          "kafka1",
-          "kafka2"
-        ],
-        "name": "kafka",
-        "ttl": 60
-      },
-      {
-        "hosts": [
-          "api1"
-        ],
-        "name": "api"
-      }
-    ]
-  },
-  {
-    "services": [
-      {
-        "hosts": [
-          "zookeeper1"
-        ],
-        "name": "zookeeper",
-        "ttl": 60
-      }
-    ]
-  }
-]
+[{"ttl": 120,
+  "services": [{"hosts": ["kafka1",
+                          "kafka2"],
+                "name": "kafka",
+                "ttl": 60},
+               {"hosts": ["api1"],
+                "name": "api"}]},
+ {"services": [{"hosts": ["zookeeper1"],
+                "name":
+                "zookeeper",
+                "ttl": 60}]}]
 ```
 
 Keys and values are the same as the file discovery mechanism.

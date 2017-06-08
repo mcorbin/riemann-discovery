@@ -15,38 +15,17 @@
 
   The url should returns a vector describing the services, example:
 
-[
-  {
-    \"ttl\": 120,
-    \"services\": [
-      {
-        \"hosts\": [
-          \"kafka1\",
-          \"kafka2\"
-        ],
-        \"name\": \"kafka\",
-        \"ttl\": 60
-      },
-      {
-        \"hosts\": [
-          \"api1\"
-        ],
-        \"name\": \"api\"
-      }
-    ]
-  },
-  {
-    \"services\": [
-      {
-        \"hosts\": [
-          \"zookeeper1\"
-        ],
-        \"name\": \"zookeeper\",
-        \"ttl\": 60
-      }
-    ]
-  }
-]"
+[{\"ttl\": 120,
+  \"services\": [{\"hosts\": [\"kafka1\",
+                          \"kafka2\"],
+                \"name\": \"kafka\",
+                \"ttl\": 60},
+               {\"hosts\": [\"api1\"],
+                \"name\": \"api\"}]},
+ {\"services\": [{\"hosts\": [\"zookeeper1\"],
+                \"name\":
+                \"zookeeper\",
+                \"ttl\": 60}]}]"
   [discovery-config]
   (-> (json/parse-string (:body
                           (http/get (:url discovery-config)
