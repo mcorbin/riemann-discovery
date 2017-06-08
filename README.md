@@ -155,6 +155,6 @@ In your `riemann.config`:
 
 Keys and values are the same as the file discovery mechanism.
 
-`:http-options` could contains HTTP options from https://github.com/dakrone/clj-http[clojure-http].
+`:http-options` could contains HTTP options from [https://github.com/dakrone/clj-http](clojure-http).
 
 Default HTTP options are : `{:socket-timeout 1000 :conn-timeout 1000 :accept :json}`
