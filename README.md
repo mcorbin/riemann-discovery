@@ -1,6 +1,6 @@
 # riemann-discovery
 
-Service discovery for Riemann (riemann.io)
+Service discovery for Riemann ([riemann.io](riemann.io))
 
 ## Why ?
 
