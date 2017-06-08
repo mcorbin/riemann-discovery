@@ -15,14 +15,38 @@
 
   The url should returns a vector describing the services, example:
 
-   [{:ttl 120
-     ;tags [\"foo\"]
-     :services [{:hosts [\"foo.bar\" \"foobar.bar\"]
-                 :name \"kafka\"
-                 :tags [\"bar\"]
-                 :ttl 60}
-                {:hosts [\"baz.boo\"]
-                 :name \"api\"}]}]"
+[
+  {
+    \"ttl\": 120,
+    \"services\": [
+      {
+        \"hosts\": [
+          \"kafka1\",
+          \"kafka2\"
+        ],
+        \"name\": \"kafka\",
+        \"ttl\": 60
+      },
+      {
+        \"hosts\": [
+          \"api1\"
+        ],
+        \"name\": \"api\"
+      }
+    ]
+  },
+  {
+    \"services\": [
+      {
+        \"hosts\": [
+          \"zookeeper1\"
+        ],
+        \"name\": \"zookeeper\",
+        \"ttl\": 60
+      }
+    ]
+  }
+]"
   [discovery-config]
   (-> (json/parse-string (:body
                           (http/get (:url discovery-config)

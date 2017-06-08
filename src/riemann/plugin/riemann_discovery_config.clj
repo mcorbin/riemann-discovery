@@ -4,9 +4,9 @@
 (defn reduce-hosts
   "Takes an element of the `:services` key from config-elem, and generates a configuration for it."
   [service default-ttl default-tags]
-  (reduce #(assoc %1 [%2 (:name service)] {:tags (vec (concat ["riemann-discovery"]
-                                                              default-tags
-                                                              (:tags service [])))
+  (reduce #(assoc %1 [%2 (:name service)] {:tags (into []
+                                                       (concat default-tags
+                                                               (:tags service [])))
                                            :time (time/unix-time)
                                            :ttl (or (:ttl service) default-ttl)})
           {}
