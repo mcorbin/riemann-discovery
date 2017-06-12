@@ -31,7 +31,7 @@ You are now ready to use the plugin !
 
 ### Files based discovery
 
-In a directory (for example `/etc/riemann/discovery`), creates a new files, for example named `services.edn`. It will contains the informations about your system, for example:
+In a directory (for example `/etc/riemann/discovery`), creates a new file, for example named `services.edn`. It will contains the informations about your system, for example:
 
 ```clojure
 {:ttl 120
@@ -72,7 +72,6 @@ here, we only have one service named `"zookeeper`", running on host `"zookeeper1
 
 You should now configure the plugin in riemann.config:
 
-
 ```clojure
 
 (discovery/discovery {:type :file
@@ -87,19 +86,23 @@ You should now configure the plugin in riemann.config:
 
 The `discovery/discovery` function takes 2 parameters:
 
-- First parameter: a map containing global dicovery options (common to all discovery mechanisms).
-- Second parameter: a map containing the configuration of the discovery mechanism specified in the first parameter.
+- First parameter: a map containing global discovery options (common to all discovery mechanisms).
+  - `:type`: The service discovery mechanism, here `:file`.
+  - `:interval`: Every `:interval` seconds (120 in our case, default 60), Riemann will call the service discovery mechanism, and inject into itself events representing added/removed hosts.
+  - `:pred-fn`: Optional parameter, the value should be a function taking an event as parameter. The plugin will only emit events where `(pred-fn-value event)` is true. For example, if you want to only emit events tagged "production", you could have:
 
-Here, the first parameter contains the `:type` key, indicating that we will use file based discovery, and an `:interval` key.
-The second parameter contains a `:path` key, containing a list of path to directories.
+```clojure
+:pred-fn #(riemann.streams/tagged-all? ["production"] %)
+```
 
-Every `:interval` seconds (120 in our case, default 60), this function will read all edn files in `:path`, and inject into Riemann events representing added/removed hosts.
+- Second parameter: a map containing the configuration of the discovery mechanism specified in the first parameter. For `:file`:
+  - `:path`: A list of path to directories.
 
-These events are tagged `riemann-discovery`, and their state are either `added` or `removed`.
+Emitted events are tagged `riemann-discovery`, and their states are either `added` or `removed`.
 
-`(discovery/discovery-stream index)` is a stream taking an index as parameter. It will capture events emitted by the `discovery` function, and add/remove from index hosts and services.
+- `(discovery/discovery-stream index)` is a stream taking an index as parameter. It will capture events emitted by the `discovery` function, and add/remove from index hosts and services.
 
-In your example the `discovery` function will emit these events:
+In our example the `discovery` function will emit these events:
 
 ```clojure
 INFO [2017-06-07 23:33:18,566] riemann task 0 - riemann.config - {:host kafka2, :service kafka, :time 1496871198537/1000, :tags [riemann-discovery kafka], :state added, :ttl 60}
@@ -126,7 +129,7 @@ This means that you should carefully index events from your datasource and choos
 
 Periodically send a GET request to an HTTP endpoint which must return the host/services list.
 
-Please read the `File based discovery` section to understand how the plugin works.
+Please read the `File based discovery` section to understand how the plugin works and what are the default options.
 
 #### Plugin configuration
 
@@ -158,5 +161,4 @@ In your `riemann.config`:
 Keys and values are the same as the file discovery mechanism.
 
 `:http-options` could contains HTTP options from [clojure-http](https://github.com/dakrone/clj-http).
-
 Default HTTP options are : `{:socket-timeout 1000 :conn-timeout 1000 :accept :json}`
