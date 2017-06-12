@@ -189,4 +189,11 @@
              :ttl 60
              :tags ["riemann-discovery"]}])))))
 
-
+(deftest discovery-stream-test
+  (let [index (riemann.config/index)
+        stream (discovery/discovery-stream index)]
+    (stream {:host "foo" :service "bar" :time 1 :state "added" :tags ["riemann-discovery"]})
+    (is (= (riemann.index/lookup index "foo" "bar"))
+        {:host "foo" :service "bar" :time 1 :state "added" :tags ["riemann-discovery"]})
+    (stream {:host "foo" :service "bar" :time 1 :state "removed" :tags ["riemann-discovery"]})
+   (is (= (riemann.index/lookup index "foo" "bar")) nil)))

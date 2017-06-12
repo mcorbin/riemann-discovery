@@ -75,7 +75,7 @@
     (fn [event]
       (cond
         (= "added" (:state event)) (index event)
-        (= "removed" (:state event)) (index event)))))
+        (= "removed" (:state event)) (riemann.index/delete-exactly index event)))))
 
 ;; all discovery mechanisms (each discover fn) should returns a map like this one:
 
