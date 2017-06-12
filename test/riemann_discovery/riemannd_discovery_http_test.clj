@@ -18,6 +18,7 @@
                {:services [{:hosts ["zookeeper1"]
                             :name "zookeeper"
                             :ttl 60}]}])
+
 (defn handler
   [req]
   {:status 200

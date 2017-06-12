@@ -108,7 +108,7 @@ INFO [2017-06-07 23:33:18,569] riemann task 0 - riemann.config - {:host zookeepe
 INFO [2017-06-07 23:33:18,570] riemann task 0 - riemann.config - {:host kafka1, :service kafka, :time 1496871198537/1000, :tags [riemann-discovery kafka], :state added, :ttl 60}
 ```
 
-Note: events already emitted are emitted again after *at least 2\*(:ttl event)*, to give the event a chance to expire.
+**Note**: events already emitted are emitted again after *at least 2\*(:ttl event)*, to give the event a chance to expire.
 
 If you remove hosts or services from the edn file, events with `:state "removed"` would be sent, and removed from the index (so no false alert).
 
@@ -118,7 +118,9 @@ If one of these events expire, this means that your datasource stopped or never 
 
 In my example i have `kafka` in the host `kafka1`. If i receive metrics from Kafka, i will index these events with `:service "kafka"`  to avoid expiration.
 
-This means that you should carefully index events from your datasource and choose the right `:ttl` in your service discovery configuration.
+This means that you should carefully index events from your datasource and choose the right `:ttl` in your service discovery configuration, and use the right `:interval` option :
+
+- `:interval` should probably always be < to your max `:ttl`, to be sure to remove removed hosts and services from the index before expiration.
 
 ### HTTP based discovery
 
