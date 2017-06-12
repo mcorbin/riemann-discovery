@@ -23,34 +23,34 @@
                                                :name "zookeeper"
                                                :ttl 60}]}])]
       (is (= (count @calls) 0))
-      (advance! 29)
+      (advance! 9)
       (is (= (count @calls) 0))
-      (advance! 30)
+      (advance! 10)
       (is (= (count @calls) 1))
       (let [events (first (last @calls))]
         (is (= (count events) 4))
         (is (some #{{:host "kafka1"
                      :service "kafka"
                      :ttl 60
-                     :time 30
+                     :time 10
                      :state "added"
                      :tags ["riemann-discovery"]}} events))
         (is (some #{{:host "kafka2"
                      :service "kafka"
                      :ttl 60
-                     :time 30
+                     :time 10
                      :state "added"
                      :tags ["riemann-discovery"]}} events))
         (is (some #{{:host "api1"
                      :service "api"
                      :ttl 120
-                     :time 30
+                     :time 10
                      :state "added"
                      :tags ["riemann-discovery"]}} events))
         (is (some #{{:host "zookeeper1"
                      :service "zookeeper"
                      :ttl 60
-                     :time 30
+                     :time 10
                      :state "added"
                      :tags ["riemann-discovery"]}} events))))))
 
@@ -69,34 +69,34 @@
                                                :name "zookeeper"
                                                :ttl 60}]}])]
       (is (= (count @calls) 0))
-      (advance! 29)
+      (advance! 9)
       (is (= (count @calls) 0))
-      (advance! 30)
+      (advance! 10)
       (is (= (count @calls) 1))
       (let [events (first (last @calls))]
         (is (= (count events) 4))
         (is (some #{{:host "kafka1"
                      :service "kafka"
                      :ttl 60
-                     :time 30
+                     :time 10
                      :state "added"
                      :tags ["riemann-discovery" "production" "kafka"]}} events))
         (is (some #{{:host "kafka2"
                      :service "kafka"
                      :ttl 60
-                     :time 30
+                     :time 10
                      :state "added"
                      :tags ["riemann-discovery" "production" "kafka"]}} events))
         (is (some #{{:host "api1"
                      :service "api"
                      :ttl 120
-                     :time 30
+                     :time 10
                      :state "added"
                      :tags ["riemann-discovery" "production"]}} events))
         (is (some #{{:host "zookeeper1"
                      :service "zookeeper"
                      :ttl 60
-                     :time 30
+                     :time 10
                      :state "added"
                      :tags ["riemann-discovery"]}} events))))))
 
@@ -117,15 +117,15 @@
                                                :name "zookeeper"
                                                :ttl 60}]}])]
       (is (= (count @calls) 0))
-      (advance! 29)
+      (advance! 9)
       (is (= (count @calls) 0))
-      (advance! 30)
+      (advance! 10)
       (is (= (count @calls) 1))
       (let [event (first (last @calls))]
         (is (= event {:host "zookeeper1"
                       :service "zookeeper"
                       :ttl 60
-                      :time 30
+                      :time 10
                       :state "added"
                       :tags ["riemann-discovery" "zookeeper"]}))))))
 

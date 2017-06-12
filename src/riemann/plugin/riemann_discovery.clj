@@ -113,5 +113,5 @@
 
    `discovery-config` : a map containing the configuration for the discovery mechanism"
   ([global-config discovery-config]
-   (every! (:interval global-config 60) 30
+   (every! (:interval global-config 60) 10
            (discovery-task global-config discovery-config))))
