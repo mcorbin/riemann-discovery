@@ -39,35 +39,33 @@
   (reduce #(assoc %1 [(* %2 2) %2] {:time 100 :ttl 80}) {} (range number)))
 
 (deftest reinject-events-test
-  (testing "no pred-fn"
-    (with-mock [calls riemann.config/reinject]
-      (discovery/reinject-events [{:host "foo"
-                                   :service "bar"
-                                   :time 1
-                                   :ttl 60
-                                   :tags ["kafka"]
-                                   :state "added"}
-                                  {:host "foo"
-                                   :service "baz"
-                                   :time 1
-                                   :ttl 60
-                                   :tags ["riemann"]
-                                   :state "added"}]
-                                 {})
-      (is (= (first (first @calls)))
-          {:host "foo"
-           :service "bar"
-           :time 1
-           :ttl 60
-           :tags ["kafka"]
-           :state "added"})
-      (is (= (first (second @calls)))
-          {:host "foo"
-           :service "baz"
-           :time 1
-           :ttl 60
-           :tags ["riemann"]
-           :state "added"}))))
+  (with-mock [calls riemann.config/reinject]
+    (discovery/reinject-events [{:host "foo"
+                                 :service "bar"
+                                 :time 1
+                                 :ttl 60
+                                 :tags ["kafka"]
+                                 :state "added"}
+                                {:host "foo"
+                                 :service "baz"
+                                 :time 1
+                                 :ttl 60
+                                 :tags ["riemann"]
+                                 :state "added"}])
+    (is (= (first (first @calls)))
+        {:host "foo"
+         :service "bar"
+         :time 1
+         :ttl 60
+         :tags ["kafka"]
+         :state "added"})
+    (is (= (first (second @calls)))
+        {:host "foo"
+         :service "baz"
+         :time 1
+         :ttl 60
+         :tags ["riemann"]
+         :state "added"})))
 
 (deftest get-new-state-test
   (with-mock [calls discovery/reinject-events]
@@ -197,3 +195,21 @@
         {:host "foo" :service "bar" :time 1 :state "added" :tags ["riemann-discovery"]})
     (stream {:host "foo" :service "bar" :time 1 :state "removed" :tags ["riemann-discovery"]})
    (is (= (riemann.index/lookup index "foo" "bar")) nil)))
+
+
+(deftest filtre-current-state-test
+  (is (= (discovery/filter-current-state {["foo.bar" "kafka"] {:tags ["foo"]}}
+                                         [])
+         {["foo.bar" "kafka"] {:tags ["foo"]}}))
+  (is (= (discovery/filter-current-state {["foo.bar" "kafka"] {:tags ["foo"]}}
+                                         nil)
+         {["foo.bar" "kafka"] {:tags ["foo"]}}))
+  (is (= (discovery/filter-current-state {["foo.bar" "kafka"] {:tags ["foo"]}}
+                                         ["foo"])
+         {["foo.bar" "kafka"] {:tags ["foo"]}}))
+  (is (= (discovery/filter-current-state {["foo.bar" "kafka"] {:tags ["foo" "bar"]}}
+                                         ["foo"])
+         {["foo.bar" "kafka"] {:tags ["foo" "bar"]}}))
+  (is (= (discovery/filter-current-state {["foo.bar" "kafka"] {:tags ["baz"]}}
+                                         ["foo"])
+         {})))

@@ -89,10 +89,10 @@ The `discovery/discovery` function takes 2 parameters:
 - First parameter: a map containing global discovery options (common to all discovery mechanisms).
   - `:type`: The service discovery mechanism, here `:file`.
   - `:interval`: Every `:interval` seconds (120 in our case, default 60), Riemann will call the service discovery mechanism, and inject into itself events representing added/removed hosts.
-  - `:pred-fn`: Optional parameter, the value should be a function taking an event as parameter. The plugin will only emit events where `(pred-fn-value event)` is true. For example, if you want to only emit events tagged "production", you could have:
+  - `:tags`: Optional parameter, the value should be a list of tags. The plugin will only emit events tagged with all of these tags. It will emit all events if `:tags` is nil or empty.
 
 ```clojure
-:pred-fn #(riemann.streams/tagged-all? ["production"] %)
+:tags ["production"]
 ```
 
 - Second parameter: a map containing the configuration of the discovery mechanism specified in the first parameter. For `:file`:

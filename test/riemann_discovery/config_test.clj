@@ -104,8 +104,7 @@
   (with-mock [calls riemann.config/reinject]
     (let [d (discovery/discovery {:type :config
                                   ;; filter all events not zookeeper
-                                  :pred-fn #(riemann.streams/tagged-all?
-                                             ["zookeeper"] %)}
+                                  :tags ["zookeeper"]}
                                  [{:ttl 120
                                    :services [{:hosts ["kafka1" "kafka2"]
                                                :name "kafka"
