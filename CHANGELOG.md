@@ -6,7 +6,7 @@
 
 - Major naming refactoring
 - The `:pred-fn` global option is replaced by the `:tags` option.
-&
+
 ## Release 0.1.
 
 - Support for file based discovery
