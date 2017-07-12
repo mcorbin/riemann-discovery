@@ -1,67 +1,61 @@
-(ns riemann-discovery.riemann-discovery-file-test
-  (:require [riemann.plugin.riemann-discovery-file :as file]
-            [riemann.plugin.riemann-discovery :as discovery]
-            [riemann.time.controlled :refer :all]
-            [riemann.time :refer [unix-time]]
+(ns riemann-discovery.http-test
+  (:require [clojure.test :refer :all]
+            [riemann-discovery.http :refer [discover]]
+            [riemann-discovery.core :as discovery]
+            [org.httpkit.server :as http]
+            [cheshire.core :as json]
             [riemann-discovery.test-utils :refer [with-mock]]
-            [clojure.test :refer :all]))
+            [riemann.time.controlled :refer :all]))
 
-(use-fixtures :once control-time!)
+(defonce server (atom nil))
+
+(def services [{:ttl 120
+                :services [{:hosts ["kafka1" "kafka2"]
+                            :name "kafka"
+                            :ttl 60}
+                           {:hosts ["api1"]
+                            :name "api"}]}
+               {:services [{:hosts ["zookeeper1"]
+                            :name "zookeeper"
+                            :ttl 60}]}])
+
+(defn handler
+  [req]
+  {:status 200
+   :headers {"Content-Type" "application/json"}
+   :body (json/generate-string services)})
+
+(defn stop-server
+  []
+  (when-not (nil? @server)
+    (@server :timeout 100)
+    (reset! server nil)))
+
+(defn start-server
+  []
+  (reset! server (http/run-server handler {:port 9999})))
+
 (use-fixtures :each reset-time!)
+(use-fixtures :once (fn [t]
+                      (start-server)
+                      (with-controlled-time! (t))
+                      (stop-server)))
 
-(deftest get-extension-test
-  (is (= "clj" (file/get-extension "foo.clj")))
-  (is (= "clj" (file/get-extension "/bar/foo.clj")))
-  (is (= "clj" (file/get-extension ".clj")))
-  (is (= nil (file/get-extension "")))
-  (is (= nil (file/get-extension "foo")))
-  (is (= nil (file/get-extension "/bar/foo"))))
+(deftest discover-test
+  (let [result (discover {:url "http://localhost:9999"})]
+    (is (= result (riemann-discovery.config/discover services)))))
 
-(deftest get-edn-files-test
-  (let [path (file/get-edn-files "test/riemann_discovery/edn/")]
-    (is (= 2 (count path)))
-    (is (some #{"test/riemann_discovery/edn/f1.edn"} path))
-    (is (some #{"test/riemann_discovery/edn/f2.edn"} path))))
-
-(deftest read-edn-file-test
-  (is (= (file/read-edn-file "test/riemann_discovery/edn/f1.edn")
-         [{:ttl 120
-           :services [{:hosts ["kafka1" "kafka2"]
-                       :name "kafka"
-                       :ttl 60}
-                      {:hosts ["api1"]
-                       :name "api"}]}
-          {:services [{:hosts ["zookeeper1"]
-                       :name "zookeeper"
-                       :ttl 60}]}])))
-
-(deftest read-edn-files-test
-  (let [result (file/read-edn-files ["test/riemann_discovery/edn/"])]
-    (is (= (count result) 3))
-    (is (some #{{:ttl 120
-                 :services [{:hosts ["kafka1" "kafka2"]
-                             :name "kafka"
-                             :ttl 60}
-                            {:hosts ["api1"]
-                             :name "api"}]}} result))
-    (is (some #{{:services [{:hosts ["zookeeper1"]
-                             :name "zookeeper"
-                             :ttl 60}]}} result))
-    (is {:ttl 120
-         :services [{:hosts ["cassandra1"]
-                     :name "cassandra"}]})))
-
-(deftest file-discovery-test
-  (with-mock [calls riemann.plugin.riemann-discovery/reinject-events]
-    (let [d (discovery/discovery {:type :file}
-                                 {:path ["test/riemann_discovery/edn/"]})]
+(deftest http-discovery-test
+  (with-mock [calls riemann-discovery.core/reinject-events]
+    (let [d (discovery/discovery {:type :http}
+                                 {:url "http://localhost:9999"})]
       (is (= (count @calls) 0))
       (advance! 9)
       (is (= (count @calls) 0))
       (advance! 10)
       (is (= (count @calls) 1))
       (let [events (first (last @calls))]
-        (is (= (count events) 5))
+        (is (= (count events) 4))
         (is (some #{{:host "kafka1"
                      :service "kafka"
                      :ttl 60
@@ -83,12 +77,6 @@
         (is (some #{{:host "zookeeper1"
                      :service "zookeeper"
                      :ttl 60
-                     :time 10
-                     :state "added"
-                     :tags ["riemann-discovery"]}} events))
-        (is (some #{{:host "cassandra1"
-                     :service "cassandra"
-                     :ttl 120
                      :time 10
                      :state "added"
                      :tags ["riemann-discovery"]}} events)))
@@ -133,16 +121,22 @@
       (is (= (count @calls) 6))
       ;; 60 + 2*120 = 300
       (let [events (first (last @calls))]
-        (is (= (count events) 2))
-        (is (some #{{:host "cassandra1"
-                     :service "cassandra"
-                     :ttl 120
-                     :time 310
-                     :state "added"
-                     :tags ["riemann-discovery"]}} events))
+        (is (= (count events) 1))
         (is (some #{{:host "api1"
                      :service "api"
                      :ttl 120
                      :time 310
                      :state "added"
                      :tags ["riemann-discovery"]}} events))))))
+
+
+
+
+
+
+
+
+
+
+
+

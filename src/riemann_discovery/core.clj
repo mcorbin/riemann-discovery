@@ -1,7 +1,7 @@
-(ns riemann.plugin.riemann-discovery
-  (:require [riemann.plugin.riemann-discovery-file :as file]
-            [riemann.plugin.riemann-discovery-config :as config]
-            [riemann.plugin.riemann-discovery-http :as http]
+(ns riemann-discovery.core
+  (:require [riemann-discovery.file :as file]
+            [riemann-discovery.config :as config]
+            [riemann-discovery.http :as http]
             [riemann.time :refer [every!]]
             [riemann.config :refer [reinject]]
             [riemann.streams :refer [expired?

@@ -24,7 +24,7 @@ Then, on your `riemann.config` file, add:
 ```clojure
 (load-plugins)
 
-(require '[riemann.plugin.riemann-discovery :as discovery])
+(require '[riemann-discovery.core :as discovery])
 ```
 
 You are now ready to use the plugin !

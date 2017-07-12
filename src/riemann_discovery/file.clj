@@ -1,6 +1,6 @@
-(ns riemann.plugin.riemann-discovery-file
+(ns riemann-discovery.file
   (:require [clojure.edn :as edn]
-            [riemann.plugin.riemann-discovery-config :as config])
+            [riemann-discovery.config :as config])
   (:import java.io.File))
 
 (defn get-extension

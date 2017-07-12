@@ -1,5 +1,5 @@
-(ns riemann-discovery.riemann-discovery-test
-  (:require [riemann.plugin.riemann-discovery :as discovery]
+(ns riemann-discovery.core-test
+  (:require [riemann-discovery.core :as discovery]
             [riemann.time.controlled :refer :all]
             [riemann.time :refer [unix-time]]
             [riemann-discovery.test-utils :refer [with-mock]]

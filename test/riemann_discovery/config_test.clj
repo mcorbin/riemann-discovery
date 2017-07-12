@@ -1,6 +1,6 @@
-(ns riemann-discovery.riemann-discovery-config-test
-  (:require [riemann.plugin.riemann-discovery :as discovery]
-            [riemann.plugin.riemann-discovery-config :as config]
+(ns riemann-discovery.config-test
+  (:require [riemann-discovery.core :as discovery]
+            [riemann-discovery.config :as config]
             [riemann.time.controlled :refer :all]
             [riemann.time :refer [unix-time]]
             [riemann-discovery.test-utils :refer [with-mock]]
@@ -10,7 +10,7 @@
 (use-fixtures :each reset-time!)
 
 (deftest config-discovery-test
-  (with-mock [calls riemann.plugin.riemann-discovery/reinject-events]
+  (with-mock [calls riemann-discovery.core/reinject-events]
     (let [d (discovery/discovery {:type :config}
                                  [{:ttl 120
                                    :services [{:hosts ["kafka1" "kafka2"]
@@ -55,7 +55,7 @@
                      :tags ["riemann-discovery"]}} events))))))
 
 (deftest config-discovery-test-tags
-  (with-mock [calls riemann.plugin.riemann-discovery/reinject-events]
+  (with-mock [calls riemann-discovery.core/reinject-events]
     (let [d (discovery/discovery {:type :config}
                                  [{:ttl 120
                                    :tags ["production"]

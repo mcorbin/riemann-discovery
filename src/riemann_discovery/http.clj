@@ -1,6 +1,6 @@
-(ns riemann.plugin.riemann-discovery-http
+(ns riemann-discovery.http
   (:require [clj-http.client :as http]
-            [riemann.plugin.riemann-discovery-config :as config]
+            [riemann-discovery.config :as config]
             [cheshire.core :as json]))
 
 (def default-http-options {:socket-timeout 1000 :conn-timeout 1000 :accept :json})

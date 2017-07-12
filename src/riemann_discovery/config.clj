@@ -1,4 +1,4 @@
-(ns riemann.plugin.riemann-discovery-config
+(ns riemann-discovery.config
   (:require [riemann.time :as time]))
 
 (defn reduce-hosts
