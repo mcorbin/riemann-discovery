@@ -134,30 +134,30 @@
 
 (deftest reduce-hosts-test
   (is (= (remove-time (config/reduce-hosts {:name "kafka"
-                                                    :ttl 60} 120 []))
+                                            :ttl 60} 120 []))
          {[nil "kafka"] {:tags []
                          :ttl 60}}))
   (is (= (remove-time (config/reduce-hosts {:hosts ["foo.bar"]
-                                                    :ttl 60} 120 []))
+                                            :ttl 60} 120 []))
          {["foo.bar" nil] {:tags []
                            :ttl 60}}))
   (is (= (remove-time (config/reduce-hosts {:hosts ["foo.bar" "foobar.bar"]
-                                                    :name "kafka"
-                                                    :ttl 60} 120 []))
+                                            :name "kafka"
+                                            :ttl 60} 120 []))
          {["foo.bar" "kafka"] {:tags []
                                :ttl 60}
           ["foobar.bar" "kafka"] {:tags []
                                   :ttl 60}}))
   (is (= (remove-time (config/reduce-hosts {:hosts ["foo.bar"]
-                                                    :name "kafka"} 120 []))
+                                            :name "kafka"} 120 []))
          {["foo.bar" "kafka"] {:tags []
                                :ttl 120}}))
   (is (= (remove-time (config/reduce-hosts {:hosts ["foo.bar"]
-                                                    :name "kafka"} nil []))
+                                            :name "kafka"} nil []))
          {["foo.bar" "kafka"] {:tags []
                                :ttl nil}}))
   (is (= (remove-time (config/reduce-hosts {:hosts ["foo.bar"]
-                                                    :name "kafka"} nil ["foo"]))
+                                            :name "kafka"} nil ["foo"]))
          {["foo.bar" "kafka"] {:tags ["foo"]
                                :ttl nil}}))
   (is (= (remove-time (config/reduce-hosts {:hosts ["foo.bar"]
@@ -179,7 +179,7 @@
           ["foobar.bar" "kafka"] {:tags []
                                   :ttl 60}
           ["baz.boo" "api"] {:tags []
-                                  :ttl 120}})))
+                             :ttl 120}})))
 
 (deftest discover-test
   (is (= (remove-time (config/discover

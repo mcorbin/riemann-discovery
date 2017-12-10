@@ -22,7 +22,7 @@
           (:services config-elem)))
 
 (defn discover
-  "Takes a a vec of map representing the services, example :
+  "Takes a vec of map representing the services, example :
 
    [{:ttl 120
      ;tags [\"foo\"]
