@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 - Move Clojure dependency in the dev profile.
-
+- Emitted event now have "-discovery" added to their `:service` value
 ## Release 0.2.0
 
 ### Breaking changes

@@ -13,7 +13,7 @@
   [services state]
   (map (fn [[[host service] {ttl :ttl time :time tags :tags}]]
          {:host host
-          :service service
+          :service (str service "-discovery")
           :time time
           :tags (into [] (concat ["riemann-discovery"] tags))
           :state state

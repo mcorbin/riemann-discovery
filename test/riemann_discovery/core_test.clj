@@ -16,20 +16,20 @@
                                                              :ttl 120}}
                                          "removed"))
          [{:host "foo.bar"
-           :service "kafka"
+           :service "kafka-discovery"
            :state "removed"
            :ttl 60
            :tags ["riemann-discovery"]
            :time nil}
           {:host "foobar.bar"
            :state "removed"
-           :service "kafka"
+           :service "kafka-discovery"
            :ttl 60
            :tags ["riemann-discovery"]
            :time nil}
           {:host "baz.boo"
            :state "removed"
-           :service "api"
+           :service "api-discovery"
            :ttl 120
            :tags ["riemann-discovery"]
            :time nil}])))
