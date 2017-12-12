@@ -19,11 +19,13 @@
                             :name "zookeeper"
                             :ttl 60}]}])
 
+(def server-services (atom services))
+
 (defn handler
   [req]
   {:status 200
    :headers {"Content-Type" "application/json"}
-   :body (json/generate-string services)})
+   :body (json/generate-string @server-services)})
 
 (defn stop-server
   []
@@ -37,6 +39,7 @@
 
 (use-fixtures :each reset-time!)
 (use-fixtures :once (fn [t]
+                      (reset! server-services services)
                       (start-server)
                       (with-controlled-time! (t))
                       (stop-server)))
@@ -84,19 +87,65 @@
       (is (= (count @calls) 1))
       (advance! 70)
       (is (= (count @calls) 2))
-      (is (= [] (first (last @calls))))
-      (advance! 129)
-      (is (= (count @calls) 2))
-      (advance! 130)
-      (is (= (count @calls) 3))
-      (is (= [] (first (last @calls))))
-      (advance! 189)
-      (is (= (count @calls) 3))
-      (advance! 190)
-      (is (= (count @calls) 4))
-      ;; 60 + 2*60 = 180
       (let [events (first (last @calls))]
-        (is (= (count events) 3))
+        (is (= (count events) 4))
+        (is (some #{{:host "kafka1"
+                     :service "kafka-discovery"
+                     :ttl 60
+                     :time 70
+                     :state "added"
+                     :tags ["riemann-discovery"]}} events))
+        (is (some #{{:host "kafka2"
+                     :service "kafka-discovery"
+                     :ttl 60
+                     :time 70
+                     :state "added"
+                     :tags ["riemann-discovery"]}} events))
+        (is (some #{{:host "api1"
+                     :service "api-discovery"
+                     :ttl 120
+                     :time 70
+                     :state "added"
+                     :tags ["riemann-discovery"]}} events))
+        (is (some #{{:host "zookeeper1"
+                     :service "zookeeper-discovery"
+                     :ttl 60
+                     :time 70
+                     :state "added"
+                     :tags ["riemann-discovery"]}} events)))
+
+      (reset! server-services [(last services)])
+      (advance! 130)
+      (let [events (first (last @calls))]
+        (is (= (count events) 4))
+        (is (some #{{:host "kafka1"
+                     :service "kafka-discovery"
+                     :ttl 60
+                     :time 70
+                     :state "removed"
+                     :tags ["riemann-discovery"]}} events))
+        (is (some #{{:host "kafka2"
+                     :service "kafka-discovery"
+                     :ttl 60
+                     :time 70
+                     :state "removed"
+                     :tags ["riemann-discovery"]}} events))
+        (is (some #{{:host "api1"
+                     :service "api-discovery"
+                     :ttl 120
+                     :time 70
+                     :state "removed"
+                     :tags ["riemann-discovery"]}} events))
+        (is (some #{{:host "zookeeper1"
+                     :service "zookeeper-discovery"
+                     :ttl 60
+                     :time 130
+                     :state "added"
+                     :tags ["riemann-discovery"]}} events)))
+      (reset! server-services services)
+      (advance! 190)
+      (let [events (first (last @calls))]
+        (is (= (count events) 4))
         (is (some #{{:host "kafka1"
                      :service "kafka-discovery"
                      :ttl 60
@@ -109,23 +158,16 @@
                      :time 190
                      :state "added"
                      :tags ["riemann-discovery"]}} events))
+        (is (some #{{:host "api1"
+                     :service "api-discovery"
+                     :ttl 120
+                     :time 190
+                     :state "added"
+                     :tags ["riemann-discovery"]}} events))
         (is (some #{{:host "zookeeper1"
                      :service "zookeeper-discovery"
                      :ttl 60
                      :time 190
-                     :state "added"
-                     :tags ["riemann-discovery"]}} events)))
-      (advance! 250)
-      (is (= (count @calls) 5))
-      (advance! 310)
-      (is (= (count @calls) 6))
-      ;; 60 + 2*120 = 300
-      (let [events (first (last @calls))]
-        (is (= (count events) 1))
-        (is (some #{{:host "api1"
-                     :service "api-discovery"
-                     :ttl 120
-                     :time 310
                      :state "added"
                      :tags ["riemann-discovery"]}} events))))))
 

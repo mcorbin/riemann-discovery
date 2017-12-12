@@ -67,134 +67,38 @@
          :tags ["riemann"]
          :state "added"})))
 
-(deftest get-new-state-test
-  (with-mock [calls discovery/reinject-events]
-    (testing "first call"
-      (is (= (discovery/get-new-state
-              {}
-              {["foo.bar" "kafka"] {:time 10
-                                    :ttl 60}
-               ["foobar.bar" "kafka"] {:time 10
-                                       :ttl 60}}
-              {})
-             {["foo.bar" "kafka"] {:time 10
-                                   :ttl 60}
-              ["foobar.bar" "kafka"] {:time 10
-                                      :ttl 60}}))
-      (is (= (vec (first (last @calls)))
-             [{:host "foo.bar"
-               :service "kafka"
-               :state "added"
-               :time 10
-               :ttl 60
-               :tags ["riemann-discovery"]}
-              {:host "foobar.bar"
-               :service "kafka"
-               :state "added"
-               :time 10
-               :ttl 60
-               :tags ["riemann-discovery"]}])))
-    (testing "same configuration"
-      (is (= (discovery/get-new-state
-              {["foo.bar" "kafka"] {:time 10
-                                    :ttl 60}
-               ["foobar.bar" "kafka"] {:time 10
-                                       :ttl 60}}
-              {["foo.bar" "kafka"] {:time 10
-                                    :ttl 60}
-               ["foobar.bar" "kafka"] {:time 10
-                                       :ttl 60}}
-              {})
-             {["foo.bar" "kafka"] {:time 10
-                                   :ttl 60}
-              ["foobar.bar" "kafka"] {:time 10
-                                      :ttl 60}})))
-    (is (= (vec (first (last @calls))) []))
-    (testing "remove service"
-      (is (= (discovery/get-new-state
-              {["foo.bar" "kafka"] {:time 10
-                                    :ttl 60}
-               ["foobar.bar" "kafka"] {:time 10
-                                       :ttl 60}}
-              {["foo.bar" "kafka"] {:time 10
-                                    :ttl 60}}
-              {})
-             {["foo.bar" "kafka"] {:time 10
-                                   :ttl 60}})))
-    (is (= (vec (first (last @calls)))
-           [{:host "foobar.bar"
-             :service "kafka"
-             :state "removed"
-             :time 10
-             :ttl 60
-             :tags ["riemann-discovery"]}]))
-    (testing "add service"
-      (is (= (discovery/get-new-state
-              {["foo.bar" "kafka"] {:time 10
-                                    :ttl 60}}
-              {["foo.bar" "kafka"] {:time 10
-                                    :ttl 60}
-               ["foobar.bar" "kafka"] {:time 10
-                                       :ttl 60}}
-              {})
-             {["foo.bar" "kafka"] {:time 10
-                                   :ttl 60}
-              ["foobar.bar" "kafka"] {:time 10
-                                      :ttl 60}})))
-    (is (= (vec (first (last @calls)))
-           [{:host "foobar.bar"
-             :service "kafka"
-             :state "added"
-             :time 10
-             :ttl 60
-             :tags ["riemann-discovery"]}]))
-    (testing "expiration"
-      (is (= (discovery/get-new-state
-              {["foo.bar" "kafka"] {:time 10
-                                    :ttl 60}}
-              {["foo.bar" "kafka"] {:time 60
-                                    :ttl 60}}
-              {})
-             {["foo.bar" "kafka"] {:time 10
-                                   :ttl 60}}))
-      (is (= (vec (first (last @calls)))
-           []))
-      (advance! 129)
-      (is (= (discovery/get-new-state
-              {["foo.bar" "kafka"] {:time 10
-                                    :ttl 60}}
-              {["foo.bar" "kafka"] {:time 60
-                                    :ttl 60}}
-              {})
-             {["foo.bar" "kafka"] {:time 10
-                                   :ttl 60}}))
-      (is (= (vec (first (last @calls)))
-           []))
-      (advance! 131)
-      (is (= (discovery/get-new-state
-              {["foo.bar" "kafka"] {:time 10
-                                    :ttl 60}}
-              {["foo.bar" "kafka"] {:time 120
-                                    :ttl 60}}
-              {})
-             {["foo.bar" "kafka"] {:time 120
-                                   :ttl 60}}))
-      (is (= (vec (first (last @calls)))
-           [{:host "foo.bar"
-             :service "kafka"
-             :state "added"
-             :time 120
-             :ttl 60
-             :tags ["riemann-discovery"]}])))))
-
 (deftest discovery-stream-test
   (let [index (riemann.config/index)
         stream (discovery/discovery-stream index)]
-    (stream {:host "foo" :service "bar" :time 1 :state "added" :tags ["riemann-discovery"]})
+    (stream {:host "foo"
+             :service "bar"
+             :time 1
+             :state "added"
+             :tags ["riemann-discovery"]})
     (is (= (riemann.index/lookup index "foo" "bar"))
-        {:host "foo" :service "bar" :time 1 :state "added" :tags ["riemann-discovery"]})
-    (stream {:host "foo" :service "bar" :time 1 :state "removed" :tags ["riemann-discovery"]})
-   (is (= (riemann.index/lookup index "foo" "bar")) nil)))
+        {:host "foo"
+         :service "bar"
+         :time 1
+         :state "added"
+         :tags ["riemann-discovery"]})
+    ;; does not override
+    (stream {:host "foo"
+             :service "bar"
+             :time 2
+             :state "added"
+             :tags ["riemann-discovery"]})
+    (is (= (riemann.index/lookup index "foo" "bar"))
+        {:host "foo"
+         :service "bar"
+         :time 1
+         :state "added"
+         :tags ["riemann-discovery"]})
+    (stream {:host "foo"
+             :service "bar"
+             :time 2
+             :state "removed"
+             :tags ["riemann-discovery"]})
+    (is (= (riemann.index/lookup index "foo" "bar")) nil)))
 
 
 (deftest filtre-current-state-test
@@ -212,4 +116,16 @@
          {["foo.bar" "kafka"] {:tags ["foo" "bar"]}}))
   (is (= (discovery/filter-current-state {["foo.bar" "kafka"] {:tags ["baz"]}}
                                          ["foo"])
+         {})))
+
+
+(deftest get-removed-events-test
+  (is (= (discovery/get-removed-events {["foo" "bar"] {:tags ["a"]}}
+                                       {})
+         {["foo" "bar"] {:tags ["a"]}}))
+  (is (= (discovery/get-removed-events {["foo" "bar"] {:tags ["a"]}}
+                                       {["foo" "bar"] {:tags ["b"]}})
+         {["foo" "bar"] {:tags ["a"]}}))
+  (is (= (discovery/get-removed-events {["foo" "bar"] {:tags ["a"]}}
+                                       {["foo" "bar"] {:tags ["a"]}})
          {})))
