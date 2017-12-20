@@ -129,3 +129,20 @@
   (is (= (discovery/get-removed-events {["foo" "bar"] {:tags ["a"]}}
                                        {["foo" "bar"] {:tags ["a"]}})
          {})))
+
+(deftest discovery-stream-test
+  (let [index (riemann.core/wrap-index (riemann.index/index))
+        s (discovery/discovery-stream index)]
+    (s {})
+    (s {:host "foo" :service "bar" :state "added" :time 0})
+    (s {:host "foo" :service "bar" :state "ok" :time 0 :tags ["riemann-discovery"]})
+    (is (= (riemann.index/search index true) []))
+    (s {:host "foo" :service "bar" :state "added" :time 0 :tags ["riemann-discovery"]})
+    (is (= (vec (riemann.index/search index true))
+           [{:host "foo",
+             :service "bar",
+             :state "added",
+             :time 0,
+             :tags ["riemann-discovery"]}]))
+    (s {:host "foo" :service "bar" :state "removed" :time 0 :tags ["riemann-discovery"]})
+    (is (= (vec (riemann.index/search index true)) []))))

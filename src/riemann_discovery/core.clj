@@ -43,7 +43,7 @@
                                                                    (:host event)
                                                                    (:service event))
                                      (index event))
-        (= "removed" (:state event)) (riemann.index/delete-exactly index event)))))
+        (= "removed" (:state event)) (riemann.index/delete index event)))))
 
 (defn get-removed-events
   "get the old and the new state, returns the events present in the old state

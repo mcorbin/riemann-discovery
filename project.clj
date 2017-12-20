@@ -1,4 +1,4 @@
-(defproject riemann-discovery "0.2.0"
+(defproject riemann-discovery "0.2.0-SNAPSHOT"
   :description "Service discovery for Riemann (riemann.io)"
   :url "https://github.com/mcorbin/riemann-discovery"
   :license {:name "MIT"}
