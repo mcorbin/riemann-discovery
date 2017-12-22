@@ -98,17 +98,17 @@ The `discovery/discovery` function takes 2 parameters:
 - Second parameter: a map containing the configuration of the discovery mechanism specified in the first parameter. For `:file`:
   - `:path`: A list of path to directories.
 
-Emitted events are tagged `riemann-discovery`, and their states are either `added` or `removed`.
+Emitted events are tagged `riemann-discovery`, and their states are either `added` or `removed`. **The "-discovery" string will be added to the service name** (see example below).
 
-- `(discovery/discovery-stream index)` is a stream taking an index as parameter. It will capture events emitted by the `discovery` function, and add/remove from index hosts and services.
+- `(discovery/discovery-stream index)` is a stream taking an index as parameter. It will capture events emitted by the `discovery` function, and add/remove them from the index.
 
 In our example the `discovery` function will emit these events:
 
 ```clojure
-INFO [2017-06-07 23:33:18,566] riemann task 0 - riemann.config - {:host kafka2, :service kafka, :time 1496871198537/1000, :tags [riemann-discovery kafka], :state added, :ttl 60}
-INFO [2017-06-07 23:33:18,568] riemann task 0 - riemann.config - {:host api1, :service api, :time 1496871198537/1000, :tags [riemann-discovery api], :state added, :ttl 120}
-INFO [2017-06-07 23:33:18,569] riemann task 0 - riemann.config - {:host zookeeper1, :service zookeeper, :time 1496871198537/1000, :tags [riemann-discovery production zookeeper], :state added, :ttl 60}
-INFO [2017-06-07 23:33:18,570] riemann task 0 - riemann.config - {:host kafka1, :service kafka, :time 1496871198537/1000, :tags [riemann-discovery kafka], :state added, :ttl 60}
+INFO [2017-12-22 20:52:30,050] riemann task 1 - riemann.config - {:host zookeeper1, :service zookeeper-discovery, :time 1513972350029/1000, :tags [riemann-discovery production zookeeper], :state added, :ttl 60}
+INFO [2017-12-22 20:52:30,051] riemann task 1 - riemann.config - {:host api1, :service api-discovery, :time 1513972350029/1000, :tags [riemann-discovery api], :state added, :ttl 120}
+INFO [2017-12-22 20:52:30,052] riemann task 1 - riemann.config - {:host kafka2, :service kafka-discovery, :time 1513972350029/1000, :tags [riemann-discovery kafka], :state added, :ttl 60}
+INFO [2017-12-22 20:52:30,052] riemann task 1 - riemann.config - {:host kafka1, :service kafka-discovery, :time 1513972350029/1000, :tags [riemann-discovery kafka], :state added, :ttl 60}
 ```
 
 **Note**: events with `:state` = added already indexed will not be reindexed, otherwise it will never expires..
@@ -119,7 +119,7 @@ If one of these events expire, this means that your datasource stopped or never 
 
 *It's your responsability* to index events coming from your datasource to avoid expiration.
 
-In my example i have `kafka` in the host `kafka1`. If i receive metrics from Kafka, i will index these events with `:service "kafka"`  to avoid expiration.
+In my example i have `kafka` in the host `kafka1`. If i receive metrics from Kafka, i will index these events with `:service "kafka-discovery"`  to avoid expiration.
 
 This means that you should carefully index events from your datasource and choose the right `:ttl` in your service discovery configuration, and use the right `:interval` option :
 
