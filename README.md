@@ -113,11 +113,11 @@ INFO [2017-12-22 20:52:30,052] riemann task 1 - riemann.config - {:host kafka2, 
 INFO [2017-12-22 20:52:30,052] riemann task 1 - riemann.config - {:host kafka1, :service kafka-discovery, :time 1513972350029/1000, :tags [riemann-discovery kafka], :state added, :ttl 60}
 ```
 
-**Note**: events with `:state` = "added" already indexed will not be reindexed, otherwise it will never expires..
+**Note**: events with `:state` = "added" already indexed will not be reindexed, otherwise it will never expire.
 
 If you remove hosts or services from the edn file, events with `:state "removed"` would be sent, and removed from the index (so no false alert).
 
-If one of these events expire, this means that your datasource stopped or never emitted.
+If any of these events expire, this means that your datasource stopped or never emitted.
 
 *It's your responsability* to index events coming from your datasource to avoid expiration.
 
