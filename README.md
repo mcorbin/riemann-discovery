@@ -89,7 +89,7 @@ The `discovery/discovery` function takes 2 parameters:
 - First parameter: a map containing global discovery options (common to all discovery mechanisms).
   - `:type`: The service discovery mechanism, here `:file`.
   - `:interval`: Every `:interval` seconds (120 in our case, default 60), Riemann will call the service discovery mechanism, and inject into itself events representing added/removed hosts.
-  - `:tags`: Optional parameter, the value should be a list of tags. The plugin will only emit events tagged with all of these tags. It will emit all events if `:tags` is nil or empty.
+  - `:tags`: Optional parameter, the value should be a list of tags. The plugin will only emit events tagged with all of these tags. It will emit all events if `:tags` is nil or empty. Example:
 
 ```clojure
 :tags ["production"]
@@ -111,7 +111,7 @@ INFO [2017-06-07 23:33:18,569] riemann task 0 - riemann.config - {:host zookeepe
 INFO [2017-06-07 23:33:18,570] riemann task 0 - riemann.config - {:host kafka1, :service kafka, :time 1496871198537/1000, :tags [riemann-discovery kafka], :state added, :ttl 60}
 ```
 
-**Note**: events already emitted are emitted again after *at least 2\*(:ttl event)*, to give the event a chance to expire.
+**Note**: events with `:state` = added already indexed will not be reindexed, otherwise it will never expires..
 
 If you remove hosts or services from the edn file, events with `:state "removed"` would be sent, and removed from the index (so no false alert).
 
