@@ -113,7 +113,7 @@ INFO [2017-12-22 20:52:30,052] riemann task 1 - riemann.config - {:host kafka2, 
 INFO [2017-12-22 20:52:30,052] riemann task 1 - riemann.config - {:host kafka1, :service kafka-discovery, :time 1513972350029/1000, :tags [riemann-discovery kafka], :state added, :ttl 60}
 ```
 
-**Note**: events with `:state` = added already indexed will not be reindexed, otherwise it will never expires..
+**Note**: events with `:state` = "added" already indexed will not be reindexed, otherwise it will never expires..
 
 If you remove hosts or services from the edn file, events with `:state "removed"` would be sent, and removed from the index (so no false alert).
 
@@ -126,6 +126,7 @@ In my example i have `kafka` in the host `kafka1`. If i receive metrics from Kaf
 This means that you should carefully index events from your datasource and choose the right `:ttl` in your service discovery configuration, and use the right `:interval` option :
 
 - `:interval` should probably always be < to your max `:ttl`, to be sure to remove removed hosts and services from the index before expiration.
+- You can also push your own events tagged `riemann-discovery` with `:state` = "added" or "removed", the `discovery-stream` will take care to add/remove the events from the index.
 
 ### HTTP based discovery
 
