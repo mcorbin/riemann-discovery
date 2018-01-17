@@ -102,7 +102,10 @@ Emitted events are tagged `riemann-discovery`, and their states are either `adde
 
 - `(discovery/discovery-stream index)` is a stream taking an index as parameter. It will capture events emitted by the `discovery` function, and add/remove them from the index.
 
-![Riemann discovery schema](doc/img/riemann_discovery.png)
+
+<p align="center">
+<img src="doc/img/riemann_discovery.png" alt="Riemann discovery" title="Riemann discovery" />
+</p>
 
 In our example the `discovery` function will emit these events:
 
