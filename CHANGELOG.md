@@ -1,8 +1,12 @@
 # Change Log
 
-## [Unreleased]
+## [Release 0.3.0]
 
 - Move Clojure dependency in the dev profile.
+- Bump Riemann version to 0.3.0
+
+### Breaking changes
+
 - Emitted event now have "-discovery" added to their `:service` value
 - The plugins now always emits all added/removed hosts and services. The discovery stream will only index "added" events if no event exists for this host/service in the index.
 
