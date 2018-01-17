@@ -1,5 +1,7 @@
 # riemann-discovery
 
+[![Clojars Project](https://img.shields.io/clojars/v/riemann-discovery.svg)](https://clojars.org/riemann-discovery)
+
 Service discovery for Riemann ([riemann.io](http://riemann.io))
 
 ## Why ?
